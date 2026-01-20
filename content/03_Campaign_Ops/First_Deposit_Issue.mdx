@@ -1,0 +1,143 @@
+---
+id: "SOP-BILLING-001"
+title: "首存未到帳處理流程 (First Deposit Issue)"
+tags: ["billing", "deposit", "urgent", "newbie"]
+difficulty: "junior"
+last_updated: 2024-01-20
+ai_actionable: true
+required_tools: ["admin-panel", "bank-log"]
+---
+
+# 首存未到帳處理流程
+
+<AgentInstruction>
+當偵測到會員說「我的錢沒進來」且關鍵字包含「首存」或「第一次」時，觸發此流程。
+優先級：HIGH（首存會員流失率高，需立即處理）
+</AgentInstruction>
+
+## 1. 情緒安撫與資訊收集 (Empathy & Data Collection)
+
+首存會員通常焦慮且不信任平台，**第一句話至關重要**。
+
+<ScriptCopy 
+  intent="first_deposit_apology" 
+  text="親愛的會員您好！非常抱歉讓您久等了。由於銀行端處理時間不同，部分通道可能需要 5-15 分鐘才會入帳。請您先提供以下資訊，我立即為您查詢：1) 存款金額 2) 存款時間 3) 使用的銀行" 
+/>
+
+### 必須收集的資訊
+
+<CheckItem id="collect1">存款金額（精確到小數點）</CheckItem>
+<CheckItem id="collect2">存款時間（精確到分鐘）</CheckItem>
+<CheckItem id="collect3">使用的銀行/支付通道</CheckItem>
+<CheckItem id="collect4">會員帳號 (Username)</CheckItem>
+
+---
+
+## 2. 後台核對 (Backend Verification)
+
+登入 Admin Panel，執行以下檢查：
+
+### Step 2.1: 檢查訂單狀態
+
+1. 前往 **Transactions → Deposit Orders**
+2. 篩選條件：
+   - Username: `[會員帳號]`
+   - Time Range: `[存款時間前後 30 分鐘]`
+   - Amount: `[存款金額]`
+
+**可能的狀態：**
+
+| 狀態 | 說明 | 處理方式 |
+|------|------|---------|
+| `Pending` | 訂單已建立，等待銀行確認 | → 跳至 Step 2.2 |
+| `Processing` | 銀行已確認，系統正在入帳 | → 告知會員「5 分鐘內到帳」 |
+| `Success` | 已入帳 | → 請會員重新整理餘額 |
+| `Failed` | 訂單失敗 | → 跳至 Step 3 (退款流程) |
+| `Not Found` | 查無訂單 | → 跳至 Step 2.3 (銀行流水核對) |
+
+### Step 2.2: 檢查銀行流水 (Bank Log)
+
+如果訂單狀態為 `Pending`，需手動核對銀行流水：
+
+1. 前往 **Finance → Bank Statements**
+2. 選擇對應的收款帳戶
+3. 搜尋金額與時間
+
+**如果找到匹配記錄：**
+- 點擊「Manual Match」將流水與訂單配對
+- 系統會自動入帳
+
+**如果找不到記錄：**
+- 可能是會員填錯收款帳號
+- 跳至 Step 3
+
+### Step 2.3: 請會員提供轉帳截圖
+
+<ScriptCopy 
+  intent="request_proof" 
+  text="為了加速處理，請您提供轉帳成功的截圖（需包含：轉帳金額、時間、收款帳號）。我們會立即為您人工核對。" 
+/>
+
+---
+
+## 3. 手續費計算與補單 (Fee Calculation & Manual Credit)
+
+如果確認是系統延遲或銀行端問題，需手動補單。
+
+### 使用計算機核對實際到帳金額
+
+<DepositCalculator currency="PHP" rate={0.02} />
+
+> [!WARNING]
+> 補單前必須確認：
+> 1. 銀行流水已確認收到款項
+> 2. 會員帳號正確無誤
+> 3. 金額扣除手續費後正確
+
+### 補單步驟
+
+<CheckItem id="credit1">前往 Admin Panel → Manual Adjustment</CheckItem>
+<CheckItem id="credit2">選擇 Type: "Deposit補單"</CheckItem>
+<CheckItem id="credit3">輸入金額（扣除手續費後）</CheckItem>
+<CheckItem id="credit4">Reason: "首存銀行延遲 - Ticket #[工單號]"</CheckItem>
+<CheckItem id="credit5">提交並截圖存檔</CheckItem>
+
+---
+
+## 4. 通知會員與後續追蹤 (Notification & Follow-up)
+
+### 成功入帳後
+
+<ScriptCopy 
+  intent="deposit_success" 
+  text="您好！您的存款已成功入帳，請重新整理查看餘額。造成您的等待非常抱歉，為表歉意，我們已為您申請 50 PHP 的補償金（將於 1 小時內發放）。祝您遊戲愉快！" 
+/>
+
+### 需要退款時
+
+<ScriptCopy 
+  intent="deposit_refund" 
+  text="經查詢，您的款項因 [原因] 無法入帳。我們將在 24 小時內將款項退回您的原銀行帳戶。退款完成後會再次通知您。" 
+/>
+
+---
+
+## 5. 工單記錄 (Ticket Logging)
+
+<CheckItem id="log1">在 CRM 系統建立工單</CheckItem>
+<CheckItem id="log2">標籤：`first-deposit`, `urgent`</CheckItem>
+<CheckItem id="log3">附上所有截圖與對話記錄</CheckItem>
+<CheckItem id="log4">如果補單，需主管審核簽名</CheckItem>
+
+---
+
+## 常見問題 FAQ
+
+**Q: 會員堅持說已經轉帳，但銀行流水查無記錄？**
+A: 請會員提供完整截圖，核對收款帳號是否正確。常見錯誤：轉到舊帳號、轉到其他平台。
+
+**Q: 首存優惠是否需要手動發放？**
+A: 系統會自動發放。如果補單，需在備註欄註明「需補發首存優惠」。
+
+**Q: 處理時效要求？**
+A: 首存會員必須在 **15 分鐘內** 給予明確回覆，否則會員流失率極高。

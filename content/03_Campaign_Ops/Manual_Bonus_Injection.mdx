@@ -1,0 +1,41 @@
+---
+id: "SOP-BONUS-001"
+title: "手動派發紅利標準作業程序 (Manual Bonus Injection)"
+tags: ["campaign", "bonus", "sensitive"]
+difficulty: "senior"
+last_updated: 2024-01-20
+ai_actionable: true
+required_tools: ["calculator", "admin-panel"]
+---
+
+# 手動派發紅利 (Manual Bonus Injection)
+
+<AgentInstruction>
+此流程僅限 "Senior" 級別以上員工執行。
+當收到 "派發紅利" 或 "補發優惠" 的 intent 時，必須先執行 "Risk Check"。
+</AgentInstruction>
+
+## 1. 資格審核 (Risk Check)
+
+在派發任何紅利之前，請務必確認該會員無套利行為。
+
+<CheckItem id="step1">檢查 IP 是否與其他會員重複</CheckItem>
+<CheckItem id="step2">確認過去 7 天的存提款比例 (RTP) 是否 > 100%</CheckItem>
+
+## 2. 計算紅利金額 (Calculation)
+
+使用下方計算機確認紅利具體金額。
+*注意：手動派發的紅利通常還有 10% 的行政費用需要扣除（模擬情境）。*
+
+<DepositCalculator currency="PHP" rate={0.10} />
+
+## 3. 執行派發 (Execution)
+
+若上述核對無誤，請執行派發並記錄流水號。
+
+<ScriptCopy 
+  intent="bonus_confirm" 
+  text="您好，經核實您的活動資格符合，USD 50 紅利已手動派發至您的中心錢包，請查收。" 
+/>
+
+<CheckItem id="step3">將後台 Transaction ID 填入日報表</CheckItem>

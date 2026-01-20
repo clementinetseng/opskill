@@ -1,0 +1,196 @@
+---
+id: "SOP-ONBOARD-002"
+title: "會員身份驗證流程 (KYC Verification)"
+tags: ["kyc", "verification", "compliance", "basic"]
+difficulty: "junior"
+last_updated: 2024-01-20
+ai_actionable: true
+required_tools: ["admin-panel", "kyc-system"]
+---
+
+# 會員身份驗證流程 (KYC Verification)
+
+<AgentInstruction>
+當會員首次提款或累積提款超過 50,000 PHP 時，系統會自動觸發 KYC 驗證流程。
+此流程為法規要求，必須嚴格執行。
+</AgentInstruction>
+
+## 1. 觸發條件 (Trigger Conditions)
+
+KYC 驗證會在以下情況自動觸發：
+
+<CheckItem id="trigger1">首次提款（無論金額）</CheckItem>
+<CheckItem id="trigger2">累積提款超過 50,000 PHP</CheckItem>
+<CheckItem id="trigger3">系統偵測到異常行為（多帳號、IP 異常）</CheckItem>
+<CheckItem id="trigger4">會員主動申請 VIP 升級</CheckItem>
+
+---
+
+## 2. 通知會員 (Member Notification)
+
+當 KYC 被觸發時，系統會自動發送通知，但客服需要主動聯繫說明。
+
+### 標準話術
+
+<ScriptCopy 
+  intent="kyc_notification" 
+  text="您好！根據菲律賓博彩監管局 (PAGCOR) 規定，所有會員在首次提款時需完成身份驗證 (KYC)。這是為了保障您的帳戶安全。請您準備以下文件：1) 身份證正反面照片 2) 手持身份證自拍照 3) 近 3 個月內的地址證明（水電費帳單或銀行對帳單）。" 
+/>
+
+---
+
+## 3. 文件收集 (Document Collection)
+
+### 必要文件清單
+
+| 文件類型 | 要求 | 範例 |
+|---------|------|------|
+| **身份證明** | 政府核發的有效證件 | 身份證、護照、駕照 |
+| **手持自拍** | 手持身份證的清晰自拍 | 臉部與證件清晰可見 |
+| **地址證明** | 3 個月內的帳單 | 水電費、銀行對帳單 |
+
+### 文件品質要求
+
+<CheckItem id="doc1">照片清晰，四角完整，無反光</CheckItem>
+<CheckItem id="doc2">證件上的文字清晰可辨識</CheckItem>
+<CheckItem id="doc3">手持自拍中，臉部與證件都清晰</CheckItem>
+<CheckItem id="doc4">地址證明需包含：姓名、地址、日期</CheckItem>
+
+### 常見問題處理
+
+**Q: 會員沒有地址證明怎麼辦？**
+A: 可接受以下替代文件：
+- 銀行對帳單（電子版需有銀行 Logo）
+- 政府信件（稅單、選舉通知）
+- 租屋合約（需有房東簽名）
+
+**Q: 會員的身份證過期了？**
+A: 不接受過期證件。請會員提供其他有效證件（護照、駕照）。
+
+---
+
+## 4. 文件審核 (Document Review)
+
+### 審核步驟
+
+<CheckItem id="review1">登入 KYC System</CheckItem>
+<CheckItem id="review2">開啟待審核工單</CheckItem>
+<CheckItem id="review3">核對證件資訊與註冊資料是否一致</CheckItem>
+<CheckItem id="review4">使用 AI 工具檢測證件真偽</CheckItem>
+<CheckItem id="review5">核對手持自拍的臉部與證件照是否相符</CheckItem>
+
+### 核對重點
+
+| 項目 | 檢查內容 |
+|------|---------|
+| **姓名** | 證件姓名 = 註冊姓名 |
+| **出生日期** | 必須年滿 21 歲 |
+| **地址** | 地址證明與註冊地址一致 |
+| **照片** | 手持自拍與證件照相符 |
+
+---
+
+## 5. 審核結果處理 (Review Outcome)
+
+### 情況 A: 審核通過 ✅
+
+<CheckItem id="pass1">在 KYC System 點擊「Approve」</CheckItem>
+<CheckItem id="pass2">系統自動解除提款限制</CheckItem>
+<CheckItem id="pass3">發送通知給會員</CheckItem>
+
+<ScriptCopy 
+  intent="kyc_approved" 
+  text="恭喜您！您的身份驗證已通過，提款功能已解鎖。感謝您的配合，祝您遊戲愉快！" 
+/>
+
+### 情況 B: 審核不通過 ❌
+
+常見拒絕原因：
+- 照片模糊不清
+- 證件過期
+- 姓名不符
+- 疑似偽造證件
+
+<CheckItem id="reject1">在 KYC System 選擇拒絕原因</CheckItem>
+<CheckItem id="reject2">填寫詳細說明</CheckItem>
+<CheckItem id="reject3">通知會員重新上傳</CheckItem>
+
+<ScriptCopy 
+  intent="kyc_rejected" 
+  text="您好，您提交的文件因 [原因] 未能通過審核。請重新上傳符合要求的文件。如有疑問，請隨時聯繫客服。" 
+/>
+
+### 情況 C: 需要補件 📋
+
+<ScriptCopy 
+  intent="kyc_additional_docs" 
+  text="您好，您的文件已收到，但需要補充以下資料：[列出缺少的文件]。請於 24 小時內補齊，謝謝！" 
+/>
+
+---
+
+## 6. 特殊情況處理 (Special Cases)
+
+### 情況 A: 會員拒絕提供文件
+
+**處理方式：**
+1. 解釋這是法規要求，非平台規定
+2. 告知若不完成 KYC，將無法提款
+3. 如會員仍拒絕，上報主管
+
+<ScriptCopy 
+  intent="kyc_mandatory" 
+  text="非常理解您的顧慮，但根據菲律賓博彩監管局規定，所有博彩平台必須完成會員身份驗證。這是為了防止洗錢與保護您的帳戶安全。若不完成驗證，我們無法為您處理提款。" 
+/>
+
+### 情況 B: 疑似多帳號
+
+如果發現會員使用相同證件註冊多個帳號：
+
+<CheckItem id="multi1">立即凍結所有相關帳號</CheckItem>
+<CheckItem id="multi2">提交風控部門調查</CheckItem>
+<CheckItem id="multi3">通知會員並要求說明</CheckItem>
+
+### 情況 C: 疑似偽造證件
+
+<CheckItem id="fake1">截圖存證</CheckItem>
+<CheckItem id="fake2">立即凍結帳號</CheckItem>
+<CheckItem id="fake3">提交法務部門</CheckItem>
+<CheckItem id="fake4">通知主管與風控</CheckItem>
+
+> [!CAUTION]
+> 偽造證件屬於刑事犯罪，必須嚴肅處理。不可私下放行。
+
+---
+
+## 7. 時效要求 (SLA)
+
+| 文件狀態 | 處理時效 |
+|---------|---------|
+| 文件齊全 | 24 小時內完成審核 |
+| 需補件 | 12 小時內通知會員 |
+| VIP 會員 | 6 小時內完成審核 |
+
+<CheckItem id="sla1">每日 10:00 與 16:00 檢查待審核工單</CheckItem>
+<CheckItem id="sla2">超過時效的案件需上報主管</CheckItem>
+
+---
+
+## 8. 記錄與合規 (Logging & Compliance)
+
+<CheckItem id="log1">所有審核結果需記錄於 KYC System</CheckItem>
+<CheckItem id="log2">證件照片需加密儲存，保留 5 年</CheckItem>
+<CheckItem id="log3">每月提交「KYC 審核報表」給合規部門</CheckItem>
+
+---
+
+## 常見問題 FAQ
+
+**Q: 會員可以用別人的證件嗎？**
+A: 絕對不可以。證件必須與註冊資料完全一致。
+
+**Q: 電子版證件可以接受嗎？**
+A: 可以，但必須是政府官方 App 截圖（如：數位身份證 App）。
+
+**Q: 外國會員如何驗證？**
+A: 接受護照 + 居留證。地址證明可用英文帳單。

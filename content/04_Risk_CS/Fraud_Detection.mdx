@@ -1,0 +1,42 @@
+---
+id: "RISK-FRAUD-001"
+title: "可疑帳號識別流程 (Fraud Detection)"
+tags: ["risk", "fraud", "security"]
+difficulty: "senior"
+last_updated: 2024-01-20
+ai_actionable: true
+required_tools: ["admin-panel"]
+---
+
+# 可疑帳號識別流程
+
+<AgentInstruction>
+當系統偵測到以下任一異常行為時，自動標記為「待審核」並通知風控團隊。
+</AgentInstruction>
+
+## 風險指標
+
+### 高風險行為
+
+<CheckItem id="risk1">同一 IP 下註冊超過 3 個帳號</CheckItem>
+<CheckItem id="risk2">存款後立即提款，未進行任何投注</CheckItem>
+<CheckItem id="risk3">短時間內大額投注且勝率異常高 (>85%)</CheckItem>
+
+### 處理流程
+
+1. **凍結帳號**: 暫停該會員的提款功能
+2. **調查**: 檢查投注記錄、IP 歷史、裝置指紋
+3. **判定**:
+   - 若確認套利 → 永久封禁
+   - 若誤判 → 解除凍結並道歉
+
+<ScriptCopy 
+  intent="fraud_apology" 
+  text="您好,經系統核實您的帳號並無異常,凍結已解除,造成不便敬請見諒。" 
+/>
+
+## 常見套利手法
+
+- **對沖投注**: 在不同平台同時下注正反方
+- **Bonus Abuse**: 利用多帳號重複領取新人優惠
+- **Arbitrage Betting**: 利用賠率差異套利

@@ -1,0 +1,161 @@
+---
+id: "SOP-RISK-002"
+title: "VIP 會員提款審核流程 (VIP Withdrawal Approval)"
+tags: ["withdrawal", "vip", "risk", "senior"]
+difficulty: "senior"
+last_updated: 2024-01-20
+ai_actionable: false
+required_tools: ["admin-panel", "risk-system"]
+---
+
+# VIP 會員提款審核流程
+
+<AgentInstruction>
+此流程僅限 Senior 級別以上員工執行。
+VIP 會員提款需要額外的風控審核與優先處理。
+</AgentInstruction>
+
+## 1. VIP 等級判定 (VIP Tier Identification)
+
+### VIP 等級定義
+
+| 等級 | 累積存款 | 月流水 | 提款上限 | 審核時效 |
+|------|---------|--------|---------|---------|
+| VIP 1 | 50K+ PHP | 100K+ | 100K/day | 30 min |
+| VIP 2 | 200K+ PHP | 500K+ | 500K/day | 15 min |
+| VIP 3 | 1M+ PHP | 2M+ | 無上限 | 即時 |
+
+<CheckItem id="vip1">確認會員 VIP 等級</CheckItem>
+<CheckItem id="vip2">確認專屬客服是否已知會</CheckItem>
+
+---
+
+## 2. 風控檢查 (Risk Assessment)
+
+### 必檢項目
+
+<CheckItem id="risk1">近 7 日登入 IP 是否異常（跨國/多 IP）</CheckItem>
+<CheckItem id="risk2">近 30 日投注模式是否異常（對沖/套利）</CheckItem>
+<CheckItem id="risk3">帳號是否有多次修改銀行卡記錄</CheckItem>
+<CheckItem id="risk4">提款金額是否超過當日流水 3 倍</CheckItem>
+
+### 風險等級判定
+
+**🟢 低風險 (Low Risk)**
+- 所有檢查項目正常
+- 處理方式：直接批准
+
+**🟡 中風險 (Medium Risk)**
+- 1-2 項異常但有合理解釋
+- 處理方式：電話確認身份後批准
+
+**🔴 高風險 (High Risk)**
+- 3 項以上異常或涉及套利行為
+- 處理方式：凍結提款，提交風控主管審核
+
+---
+
+## 3. 流水審核 (Turnover Verification)
+
+VIP 會員通常享有「低流水」或「免流水」優惠，但仍需確認：
+
+### 流水計算公式
+
+```
+有效流水 = 總投注額 - 對沖投注額 - 異常投注額
+需求流水 = (存款金額 + 紅利金額) × 流水倍數
+```
+
+### 使用計算機核對
+
+<DepositCalculator currency="PHP" rate={1.0} />
+
+> [!IMPORTANT]
+> VIP 2 以上會員如果流水不足，**不得直接拒絕**，需先聯繫專屬客服協調。
+
+<CheckItem id="turnover1">確認有效流水是否達標</CheckItem>
+<CheckItem id="turnover2">如不足，計算差額並通知會員</CheckItem>
+
+---
+
+## 4. 銀行卡驗證 (Bank Account Verification)
+
+### 首次提款到新銀行卡
+
+<CheckItem id="bank1">要求會員上傳身份證 + 銀行卡照片</CheckItem>
+<CheckItem id="bank2">核對姓名是否與註冊資料一致</CheckItem>
+<CheckItem id="bank3">撥打會員電話進行身份確認</CheckItem>
+
+### 電話確認話術
+
+<ScriptCopy 
+  intent="vip_phone_verification" 
+  text="您好，我是 [平台名稱] VIP 專屬客服。您剛才提交了一筆提款申請，為了保障您的資金安全，需要進行簡單的身份確認。請問您的註冊手機號後四碼是？以及您本次提款金額是多少？" 
+/>
+
+---
+
+## 5. 批准與放款 (Approval & Payout)
+
+### 批准流程
+
+<CheckItem id="approve1">在 Admin Panel 點擊「Approve Withdrawal」</CheckItem>
+<CheckItem id="approve2">選擇出款通道（VIP 優先使用快速通道）</CheckItem>
+<CheckItem id="approve3">填寫備註：「VIP-[等級] 優先處理」</CheckItem>
+<CheckItem id="approve4">提交後通知財務部門</CheckItem>
+
+### 通知會員
+
+<ScriptCopy 
+  intent="vip_withdrawal_approved" 
+  text="尊敬的 VIP 會員您好，您的提款申請已批准，款項將在 [時效] 內到達您的銀行帳戶。感謝您對我們的信任與支持！" 
+/>
+
+---
+
+## 6. 特殊情況處理 (Special Cases)
+
+### 情況 A: VIP 會員要求加急
+
+**處理方式：**
+1. 確認是否為 VIP 2 以上
+2. 如果是，可使用「即時出款」通道（需扣除 2% 手續費）
+3. 需會員同意後才可執行
+
+<ScriptCopy 
+  intent="vip_express_payout" 
+  text="您好，我們可以為您安排即時出款（10 分鐘內到帳），但需扣除 2% 手續費。您是否同意？" 
+/>
+
+### 情況 B: VIP 會員投訴提款慢
+
+**處理方式：**
+1. 立即查詢提款狀態
+2. 如果是銀行端延遲，提供銀行流水截圖
+3. 補償 100-500 PHP 作為道歉
+
+<ScriptCopy 
+  intent="vip_complaint_apology" 
+  text="非常抱歉造成您的不便。經查詢，款項已於 [時間] 成功出款，但銀行端處理需要 1-3 小時。為表歉意，我們已為您的帳戶加入 [金額] PHP 補償金。" 
+/>
+
+---
+
+## 7. 記錄與報表 (Logging & Reporting)
+
+<CheckItem id="report1">在 VIP 管理系統記錄本次提款</CheckItem>
+<CheckItem id="report2">如有異常，填寫「風控日報」</CheckItem>
+<CheckItem id="report3">每週五提交「VIP 提款週報」給主管</CheckItem>
+
+---
+
+## 注意事項
+
+> [!WARNING]
+> - VIP 會員提款**絕對不可**超過承諾時效，否則會導致客訴升級
+> - 如遇不確定情況，立即上報主管，不可自行決定
+> - VIP 3 會員的所有操作需抄送 CEO
+
+> [!TIP]
+> - 建立 VIP 會員專屬 Telegram 群組，提款時直接通知
+> - 每月給 VIP 會員發送「專屬報表」（存款、流水、返水統計）
