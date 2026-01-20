@@ -7,7 +7,7 @@ import { MdxPreview } from "@/components/editor/MdxPreview"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 
 const MODULES = [
     '00_Onboarding',
@@ -20,7 +20,6 @@ const MODULES = [
 
 export default function NewSopPage() {
     const router = useRouter()
-    const { toast } = useToast()
     const [module, setModule] = useState(MODULES[0])
     const [slug, setSlug] = useState('')
     const [frontmatter, setFrontmatter] = useState<any>({})
@@ -28,11 +27,7 @@ export default function NewSopPage() {
 
     const handleSave = async (fm: any, cnt: string) => {
         if (!slug) {
-            toast({
-                title: "Error",
-                description: "Please enter a filename (slug)",
-                variant: "destructive"
-            })
+            toast.error("Please enter a filename (slug)")
             return
         }
 
@@ -51,18 +46,11 @@ export default function NewSopPage() {
                 throw new Error(error.error || 'Failed to create SOP')
             }
 
-            toast({
-                title: "Success",
-                description: "SOP created successfully"
-            })
+            toast.success("SOP created successfully")
 
             router.push('/editor')
         } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive"
-            })
+            toast.error(error.message)
         }
     }
 
