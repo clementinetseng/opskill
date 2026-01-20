@@ -1,24 +1,3 @@
-# services:
-#   - type: web
-#     name: hoks
-#     runtime: node
-#     plan: free
-#     buildCommand: npm install && npm run build
-#     startCommand: npm start
-#     envVars:
-#       - key: NODE_ENV
-#         value: production
-#       - key: DATABASE_URL
-#         fromDatabase:
-#           name: hoks-db
-#           property: connectionString
-
-# databases:
-#   - name: hoks-db
-#     plan: free
-#     databaseName: hoks
-#     user: hoks_user
-
 services:
   - type: web
     name: hoks
@@ -29,13 +8,3 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: hoks-db
-          property: connectionString
-
-databases:
-  - name: hoks-db
-    plan: free
-    databaseName: hoks
-    user: hoks_user
