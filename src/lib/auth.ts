@@ -22,17 +22,12 @@ export function getClientIp(request: NextRequest): string {
 }
 
 export function isIpAllowed(ip: string): boolean {
-    const allowedIps = process.env.ALLOWED_EDITOR_IPS?.split(',').map(i => i.trim()) || []
+    const allowedIps = process.env.ALLOWED_IPS?.split(',').map(i => i.trim()) || []
 
     // If no IPs configured, allow all (development mode)
-    if (allowedIps.length === 0) {
+    if (allowedIps.length === 0 && process.env.NODE_ENV === 'development') {
         return true
     }
 
     return allowedIps.includes(ip)
-}
-
-export function checkEditorPassword(password: string): boolean {
-    const correctPassword = process.env.EDITOR_PASSWORD || 'admin123'
-    return password === correctPassword
 }

@@ -34,18 +34,22 @@ export function getAllSops() {
         module: string
         slug: string
         frontmatter: any
+        lastModified: string
     }> = []
 
     modules.forEach(moduleName => {
         const slugs = getSopSlugs(moduleName)
         slugs.forEach(slug => {
+            const filePath = path.join(CONTENT_PATH, moduleName, `${slug}.mdx`)
             const content = getSopContent(moduleName, slug)
             if (content) {
                 const { data } = matter(content)
+                const stats = fs.statSync(filePath)
                 allSops.push({
                     module: moduleName,
                     slug,
-                    frontmatter: data
+                    frontmatter: data,
+                    lastModified: stats.mtime.toISOString()
                 })
             }
         })

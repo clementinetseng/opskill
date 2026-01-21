@@ -34,9 +34,9 @@ Only authorized IPs can access the site.
    Value: 38.54.37.172,123.45.67.89,98.76.54.32
    ```
 
-4. **Keep existing Editor variables:**
-   - `ALLOWED_EDITOR_IPS` - Editor-specific IPs (can be same as ALLOWED_IPS)
-   - `EDITOR_PASSWORD` - Editor password
+4. **Remove existing Editor variables:**
+   - `ALLOWED_EDITOR_IPS` - Can be removed
+   - `EDITOR_PASSWORD` - Can be removed
 
 5. **Save Changes**
    - Click **"Save Changes"**
@@ -71,50 +71,24 @@ Only authorized IPs can access the site.
 **Access:** Dashboard, Wiki, SOPs, Learning Mode
 **Restriction:** IP Whitelist only
 
-### Level 2: Editor Access (ALLOWED_EDITOR_IPS + Password)
-**Who:** Content managers, supervisors
+### Level 2: Editor Access
+**Who:** Content managers
 **Access:** Create/Edit SOPs
-**Restriction:** IP Whitelist + Password
+**Restriction:** IP Whitelist only (Same as Site Access)
 
 ---
 
 ## Common Scenarios
 
-### Scenario 1: Office Only Access
-
-```
-ALLOWED_IPS=123.45.67.89
-ALLOWED_EDITOR_IPS=123.45.67.89
-EDITOR_PASSWORD=YourPassword
-```
-
-**Result:**
-- Only office IP can view site
-- Same IP can edit (with password)
-
-### Scenario 2: Multiple Locations
-
-```
-ALLOWED_IPS=123.45.67.89,98.76.54.32,38.54.37.172
-ALLOWED_EDITOR_IPS=123.45.67.89
-EDITOR_PASSWORD=YourPassword
-```
-
-**Result:**
-- 3 IPs can view site
-- Only office IP (123.45.67.89) can edit
-
-### Scenario 3: Your Current Setup
+### Scenario 1: Basic Production Setup
 
 ```
 ALLOWED_IPS=38.54.37.172
-ALLOWED_EDITOR_IPS=38.54.37.172
-EDITOR_PASSWORD=YourPassword
 ```
 
 **Result:**
 - Only your IP can access anything
-- Same IP can edit (with password)
+- Same IP can edit without password
 
 ---
 
