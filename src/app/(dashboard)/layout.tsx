@@ -37,9 +37,6 @@ export default function DashboardLayout({
                     <Link href="/editor" className="flex items-center gap-2 p-2 hover:bg-muted rounded text-sm font-medium">
                         <Settings className="w-4 h-4" /> Editor
                     </Link>
-                    <Link href="/settings" className="flex items-center gap-2 p-2 hover:bg-muted rounded text-sm font-medium">
-                        <Settings className="w-4 h-4" /> Settings
-                    </Link>
                 </nav>
             </aside>
 
