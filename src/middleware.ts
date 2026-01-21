@@ -2,63 +2,48 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 function getClientIp(request: NextRequest): string {
-    const forwarded = request.headers.get('x-forwarded-for')
-    const realIp = request.headers.get('x-real-ip')
-    const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
 
-    if (forwarded) {
-        return forwarded.split(',')[0].trim()
-    }
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
 
-    if (realIp) {
-        return realIp
-    }
+  if (realIp) {
+    return realIp
+  }
 
-    if (cfConnectingIp) {
-        return cfConnectingIp
-    }
+  if (cfConnectingIp) {
+    return cfConnectingIp
+  }
 
-    return 'unknown'
+  return 'unknown'
 }
 
-function isIpAllowed(ip: string): boolean {
-    const allowedIps = process.env.ALLOWED_IPS?.split(',').map(i => i.trim()) || []
+function isIpAllowed(ip: string, whitelistVar: string = 'ALLOWED_IPS'): boolean {
+  const allowedIps = process.env[whitelistVar]?.split(',').map(i => i.trim()) || []
 
-    // If no IPs configured, allow all (development mode)
-    if (allowedIps.length === 0 && process.env.NODE_ENV === 'development') {
-        return true
-    }
+  // If no IPs configured, allow all (development mode)
+  if (allowedIps.length === 0 && process.env.NODE_ENV === 'development') {
+    return true
+  }
 
-    // In production, if no IPs configured, block all
-    if (allowedIps.length === 0) {
-        return false
-    }
+  // In production, if no IPs configured, block all
+  if (allowedIps.length === 0) {
+    return false
+  }
 
-    return allowedIps.includes(ip)
+  return allowedIps.includes(ip)
 }
 
-export function middleware(request: NextRequest) {
-    const clientIp = getClientIp(request)
-
-    // Skip IP check for static files and API routes that don't need protection
-    const path = request.nextUrl.pathname
-    if (
-        path.startsWith('/_next') ||
-        path.startsWith('/favicon.ico') ||
-        path.startsWith('/api/health')
-    ) {
-        return NextResponse.next()
-    }
-
-    // Check IP whitelist
-    if (!isIpAllowed(clientIp)) {
-        // Return 403 Forbidden with custom page
-        return new NextResponse(
-            `
+function generateDeniedResponse(ip: string, title: string, message: string) {
+  return new NextResponse(
+    `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Access Denied</title>
+          <title>${title}</title>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
@@ -80,7 +65,7 @@ export function middleware(request: NextRequest) {
               max-width: 500px;
             }
             h1 {
-              font-size: 3rem;
+              font-size: 2.5rem;
               margin: 0 0 1rem 0;
               color: #667eea;
             }
@@ -102,39 +87,87 @@ export function middleware(request: NextRequest) {
               font-size: 4rem;
               margin-bottom: 1rem;
             }
+            .footer {
+                margin-top: 2rem;
+                font-size: 0.8rem;
+                color: #999;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="icon">🔒</div>
-            <h1>Access Denied</h1>
-            <p>Your IP address is not authorized to access this system.</p>
-            <div class="ip">Your IP: ${clientIp}</div>
-            <p>If you believe this is an error, please contact your system administrator.</p>
+            <h1>${title}</h1>
+            <p>${message}</p>
+            <div class="ip">Your IP: ${ip}</div>
+            <div class="footer">If you believe this is an error, please contact your system administrator.</div>
           </div>
         </body>
       </html>
       `,
-            {
-                status: 403,
-                headers: {
-                    'Content-Type': 'text/html; charset=utf-8',
-                },
-            }
-        )
+    {
+      status: 403,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
     }
+  )
+}
 
+export function middleware(request: NextRequest) {
+  const clientIp = getClientIp(request)
+  const path = request.nextUrl.pathname
+
+  // Skip IP check for static files and health checks
+  if (
+    path.startsWith('/_next') ||
+    path.startsWith('/favicon.ico') ||
+    path.startsWith('/api/health')
+  ) {
     return NextResponse.next()
+  }
+
+  // Debug logs (Visible in Render logs)
+  console.log(`[Middleware] Path: ${path} | IP: ${clientIp} | Env: ${process.env.NODE_ENV}`)
+
+  // 1. Level 1: Site-wide Protection (ALLOWED_IPS)
+  const isSiteAllowed = isIpAllowed(clientIp, 'ALLOWED_IPS')
+  console.log(`[Middleware] Site Whitelist Check: ${isSiteAllowed} | Var: ${process.env.ALLOWED_IPS}`)
+
+  if (!isSiteAllowed) {
+    return generateDeniedResponse(
+      clientIp,
+      'Access Denied',
+      'Your IP address is not authorized to access this system.'
+    )
+  }
+
+  // 2. Level 2: Editor Protection (ALLOWED_EDITOR_IPS)
+  // Protected paths: /editor, /api/sop
+  if (path.startsWith('/editor') || path.startsWith('/api/sop')) {
+    const isEditorAllowed = isIpAllowed(clientIp, 'ALLOWED_EDITOR_IPS')
+    console.log(`[Middleware] Editor Whitelist Check: ${isEditorAllowed} | Var: ${process.env.ALLOWED_EDITOR_IPS}`)
+
+    if (!isEditorAllowed) {
+      return generateDeniedResponse(
+        clientIp,
+        'Editor Access Denied',
+        'Your IP address does not have permission to edit content.'
+      )
+    }
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
-        '/((?!_next/static|_next/image|favicon.ico).*)',
-    ],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 }

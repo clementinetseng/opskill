@@ -1,209 +1,80 @@
-# Site-wide IP Whitelist Setup Guide
+# Dual-Layer IP Whitelist Setup Guide
 
 ## Overview
 
-The entire HOKS system is now protected by IP Whitelist:
-- **Dashboard** - Restricted
-- **Wiki** - Restricted
-- **Editor** - Double protection (IP + Password)
-- **Learning Mode** - Restricted
+The HOKS system uses two distinct IP whitelists for protection without requiring passwords:
+- **Level 1: ALLOWED_IPS** - Controls who can **view** the site (Dashboard, Wiki).
+- **Level 2: ALLOWED_EDITOR_IPS** - Controls who can **edit** the site (Create/Edit SOPs).
 
-Only authorized IPs can access the site.
+Only authorized IPs can access the site. **No passwords are required.**
 
 ---
 
-## Step 1: Configure IP Whitelist in Render
+## Step 1: Configure Whitelists in Render
 
 1. **Login to Render Dashboard**
-   - Go to https://dashboard.render.com
    - Click on your "hoks" service
 
-2. **Add Environment Variable**
+2. **Add Environment Variables**
    - Click **"Environment"** tab
    - Click **"Add Environment Variable"**
 
-3. **Add ALLOWED_IPS:**
+3. **Configure the Two Whitelists:**
 
-   ```
-   Key: ALLOWED_IPS
-   Value: 38.54.37.172
-   ```
-   
-   **To add multiple IPs (office, home, VPN):**
-   ```
-   Value: 38.54.37.172,123.45.67.89,98.76.54.32
-   ```
+| Key | Purpose | Required For |
+|-----|---------|--------------|
+| `ALLOWED_IPS` | Site-wide View Access | Dashboard, Wiki, Learning Mode |
+| `ALLOWED_EDITOR_IPS` | Editor/Write Access | /editor routes, Creating/Updating SOPs |
 
-4. **Remove existing Editor variables:**
-   - `ALLOWED_EDITOR_IPS` - Can be removed
-   - `EDITOR_PASSWORD` - Can be removed
+**Example Setup:**
 
-5. **Save Changes**
-   - Click **"Save Changes"**
+```
+ALLOWED_IPS: 38.54.37.172, 123.45.67.89 (All team IPs)
+ALLOWED_EDITOR_IPS: 38.54.37.172 (Only supervisor/admin IPs)
+```
+
+*Note: If an IP is in ALLOWED_EDITOR_IPS, it should usually also be in ALLOWED_IPS to see the dashboard.*
+
+4. **Save Changes**
    - Render will redeploy (~5 minutes)
 
 ---
 
-## Step 2: Test Access Control
+## Access Denied Behaviors
 
-### Test 1: Authorized IP
+1. **If IP not in `ALLOWED_IPS`**:
+   - ❌ Blocker: **"Access Denied"**
+   - User cannot see anything on the site.
 
-**From your office/home (IP: 38.54.37.172):**
-1. Visit: `https://your-app.onrender.com`
-2. ✅ Should see the Dashboard normally
-3. Navigate to Wiki, Editor, etc.
-4. ✅ Everything works
+2. **If IP in `ALLOWED_IPS` but NOT in `ALLOWED_EDITOR_IPS`**:
+   - ✅ Can view Dashboard and Wiki.
+   - ❌ Blocker: **"Editor Access Denied"** when clicking "Editor" or trying to save.
 
-### Test 2: Unauthorized IP
-
-**From mobile data or different location:**
-1. Visit: `https://your-app.onrender.com`
-2. ❌ Should see "Access Denied" page
-3. Shows your current IP
-4. Cannot access any part of the site
+3. **If IP in BOTH**:
+   - ✅ Full access to view and edit. No password needed.
 
 ---
 
-## Access Levels
+## Managing Access
 
-### Level 1: Site Access (ALLOWED_IPS)
-**Who:** All employees
-**Access:** Dashboard, Wiki, SOPs, Learning Mode
-**Restriction:** IP Whitelist only
+### Add a Viewer
+1. Get their IP.
+2. Add to `ALLOWED_IPS` comma-separated list.
 
-### Level 2: Editor Access
-**Who:** Content managers
-**Access:** Create/Edit SOPs
-**Restriction:** IP Whitelist only (Same as Site Access)
-
----
-
-## Common Scenarios
-
-### Scenario 1: Basic Production Setup
-
-```
-ALLOWED_IPS=38.54.37.172
-```
-
-**Result:**
-- Only your IP can access anything
-- Same IP can edit without password
-
----
-
-## Managing IPs
-
-### Add New Employee IP
-
-1. Get their IP: https://whatismyipaddress.com
-2. Go to Render → Environment
-3. Edit `ALLOWED_IPS`
-4. Add: `existing-ips,new-ip-here`
-5. Save (will redeploy)
-
-### Remove Employee Access
-
-1. Remove their IP from `ALLOWED_IPS`
-2. Save
-3. They will be blocked immediately
-
-### Dynamic IP Handling
-
-If employees have dynamic IPs (home internet):
-- **Option A:** Use VPN with static IP
-- **Option B:** Add IP range (not recommended)
-- **Option C:** Update IP when it changes
-
----
-
-## Security Features
-
-### 🔒 Protection Layers
-
-1. **Middleware IP Check** - First line of defense
-   - Blocks at Next.js level
-   - Custom 403 page
-   - Shows blocked IP
-
-2. **Editor Password** - Second layer
-   - Only for content editing
-   - 7-day token storage
-
-### ✅ What's Protected
-
-- **Everything** - Dashboard, Wiki, SOPs, Editor, Learning Mode
-- **Except** - Static files (_next/static, images)
+### Add an Editor
+1. Get their IP.
+2. Add to `ALLOWED_IPS` (to let them in).
+3. Add to `ALLOWED_EDITOR_IPS` (to let them edit).
 
 ---
 
 ## Troubleshooting
 
-### Issue: Can't access from office
-
+### Issue: "Editor Access Denied" but I should be an editor
 **Solution:**
-1. Check your current IP: https://whatismyipaddress.com
-2. Verify it matches `ALLOWED_IPS` in Render
-3. If different, update the environment variable
-4. Wait for redeploy (~5 minutes)
+1. Check the IP shown on the error page.
+2. Ensure that specific IP is added to `ALLOWED_EDITOR_IPS` in Render.
 
-### Issue: Works at office, not at home
-
+### Issue: Cannot see the site at all
 **Solution:**
-- This is expected if home IP not in whitelist
-- Add home IP to `ALLOWED_IPS`
-- Or use VPN
-
-### Issue: "Access Denied" shows wrong IP
-
-**Solution:**
-- The IP shown is what Render sees
-- Might be different from whatismyipaddress.com
-- Use the IP shown on the error page
-- Add that IP to whitelist
-
----
-
-## Development Mode
-
-When running locally (`npm run dev`):
-- IP whitelist is **disabled**
-- Allows all IPs for development
-- Editor password still required
-
----
-
-## Quick Reference
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `ALLOWED_IPS` | Site-wide access | `38.54.37.172,123.45.67.89` |
-| `ALLOWED_EDITOR_IPS` | Editor access | `38.54.37.172` |
-| `EDITOR_PASSWORD` | Editor password | `OpSkill2024!` |
-
----
-
-## Your Current Configuration
-
-**Authorized IP:** `38.54.37.172`
-
-**Recommended Settings:**
-```
-ALLOWED_IPS=38.54.37.172
-ALLOWED_EDITOR_IPS=38.54.37.172
-EDITOR_PASSWORD=YourSecurePassword
-```
-
-This gives you:
-- ✅ Full site access from your IP
-- ✅ Editor access with password
-- ❌ Everyone else blocked
-
----
-
-## Next Steps
-
-1. Wait for Render deployment to complete
-2. Test access from your IP
-3. Test from mobile data (should be blocked)
-4. Add team member IPs as needed
+1. Ensure your IP is in `ALLOWED_IPS`.
