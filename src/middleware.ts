@@ -2,20 +2,16 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  const realIp = request.headers.get('x-real-ip')
   const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  const trueClientIp = request.headers.get('true-client-ip')
+  const xRealIp = request.headers.get('x-real-ip')
+  const xForwardedFor = request.headers.get('x-forwarded-for')
 
-  if (forwarded) {
-    return forwarded.split(',')[0].trim()
-  }
-
-  if (realIp) {
-    return realIp
-  }
-
-  if (cfConnectingIp) {
-    return cfConnectingIp
+  if (cfConnectingIp) return cfConnectingIp
+  if (trueClientIp) return trueClientIp
+  if (xRealIp) return xRealIp
+  if (xForwardedFor) {
+    return xForwardedFor.split(',')[0].trim()
   }
 
   return 'unknown'

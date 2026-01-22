@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function getClientIp(request: NextRequest): string {
-    // Try various headers that might contain the real IP
-    const forwarded = request.headers.get('x-forwarded-for')
-    const realIp = request.headers.get('x-real-ip')
-    const cfConnectingIp = request.headers.get('cf-connecting-ip')
+    // Try various headers in order of reliability
+    const cfConnectingIp = request.headers.get('cf-connecting-ip') // Cloudflare
+    const trueClientIp = request.headers.get('true-client-ip') // Akamai / Cloudflare
+    const xRealIp = request.headers.get('x-real-ip') // Nginx proxy
+    const xForwardedFor = request.headers.get('x-forwarded-for') // Standard proxy
 
-    if (forwarded) {
-        return forwarded.split(',')[0].trim()
-    }
-
-    if (realIp) {
-        return realIp
-    }
-
-    if (cfConnectingIp) {
-        return cfConnectingIp
+    if (cfConnectingIp) return cfConnectingIp
+    if (trueClientIp) return trueClientIp
+    if (xRealIp) return xRealIp
+    if (xForwardedFor) {
+        // x-forwarded-for can be a list: "client, proxy1, proxy2"
+        return xForwardedFor.split(',')[0].trim()
     }
 
     return 'unknown'
