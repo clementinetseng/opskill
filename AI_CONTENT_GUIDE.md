@@ -98,7 +98,7 @@ tags: ["活動營運"]
 ---
 
 ## 5. 模組定位建議
-- `00_Onboarding`: **Wiki 為主** (公司文化、基礎設施)
+- `00_Onboarding`: **Wiki 為主** (公司文化、基礎設施、產業知識)
 - `01_Knowledge_Base`: **Wiki 為主** (產品定義、規則)
 - `02_Tools_Tech`: **SOP 為主** (後台操作、各項系統)
 - `03_Campaign_Ops`: **SOP 為主** (活動處理流程)

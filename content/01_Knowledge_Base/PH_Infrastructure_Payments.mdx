@@ -1,0 +1,50 @@
+---
+title: "PH Market: Digital Infrastructure & Payments"
+description: "Analysis of internet penetration, mobile device preferences, and the dominance of e-wallets."
+difficulty: "Intermediate"
+tags: ["Infrastructure", "Payments", "Tech"]
+---
+
+# Digital Infrastructure & Payments
+
+> **💡 中文摘要 (Chinese Summary)**
+> * **行動優先 (Mobile First)**：98.5% 的網路使用者透過手機上網。產品必須是 Mobile-First 設計，且需優化以適應中低階 Android 手機。
+> * **網路環境**：雖然 4G/5G 普及，但行動網速 (約 24Mbps) 仍落後於固網。App 需具備輕量化與斷線重連機制。
+> * **支付霸主**：**GCash** 是絕對王者 (8100 萬用戶)，其次是 Maya。玩家習慣數位錢包儲值，傳統信用卡使用率極低。
+
+---
+
+## 1. Digital Behavior & Connectivity
+The Philippines is a "Mobile-First" nation with high internet engagement.
+
+* **Internet Penetration**: ~83–84% of the population (97.5 million users) by 2025.
+* **Time Online**: Filipinos rank 3rd globally, spending avg. **8 hours 52 minutes** daily online.
+* **Device Usage**: **98.5%** of internet users access via mobile phones.
+
+### Optimization Checklist
+<CheckItem id="tech-mobile" severity="high">**Mobile Optimization**: Ensure the platform is responsive or has a native Android app.</CheckItem>
+<CheckItem id="tech-lite" severity="medium">**Lightweight Assets**: Optimize for slower mobile data speeds (avg 24 Mbps) to reduce bounce rates.</CheckItem>
+
+## 2. Mobile Hardware Landscape
+Understanding the device landscape is crucial for QA and performance tuning.
+
+* **OS Dominance**: **Android** holds >90% market share.
+* **Top Brands (Dec 2025)**:
+    1.  **Oppo** (~13.3%)
+    2.  **Realme** (~12.5%)
+    3.  **Vivo** (~11.1%)
+    4.  Transsion (Tecno/Infinix) - Fast growing in budget segment.
+* **Apple iPhone**: Niche market (~5–7% share) due to high cost.
+
+## 3. Payment Ecosystem
+Digital wallets have replaced cash as the primary method for iGaming transactions.
+
+### Key Payment Methods
+| Method | User Base | Notes |
+| :--- | :--- | :--- |
+| **GCash** | **~81 Million** | The "Super App" of PH. Essential for deposits/withdrawals. |
+| **Maya** | Millions | Strong competitor, often serves as a digital bank. |
+| **Direct Bank** | Growing | InstaPay/PESONet used for larger transactions. |
+| **Cash** | N/A Online | Cash is still used to load e-wallets at 7-Eleven/Pawnshops. |
+
+**Strategy Note**: Filipinos prefer **instant, low-fee** transactions. Integrating GCash and Maya is mandatory for conversion.
